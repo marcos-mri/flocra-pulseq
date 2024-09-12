@@ -43,6 +43,10 @@ class PSInterpreter:
         self._logger = logging.getLogger()
         logging.basicConfig(filename = log_file + '.log', filemode = 'w', level = log_level)
 
+        self._version_major = 0
+        self._version_minor = 0
+        self._version_revision = 0
+
         self._clk_t = clk_t # Instruction clock period in us
         self._tx_t = tx_t # Transmit sample period in us
         self._warning_if(int(tx_t / self._clk_t) * self._clk_t != tx_t,
@@ -73,7 +77,7 @@ class PSInterpreter:
 
         # Interpreter for section names in .seq file
         self._pulseq_keys = {
-            '[VERSION]' : self._read_temp, # Unused
+            '[VERSION]' : self._read_version,
             '[DEFINITIONS]' : self._read_defs,
             '[BLOCKS]' : self._read_blocks,
             '[RF]' : self._read_rf_events,
@@ -697,6 +701,31 @@ class PSInterpreter:
         self._logger.info('Shapes: Complete')
 
         return rline
+    
+    def _read_version(self, f):
+        self._logger.info('Definitions: Reading...')
+        while True:
+            line = f.readline()
+            rline = self._simplify(line)
+            if line == '' or rline in self._pulseq_keys: break
+
+            tmp = rline.split()
+            if len(tmp) == 2:
+                varname, value = rline.split()
+                try:
+                    value = int(value)
+                except:
+                    pass
+
+                if varname == 'major':
+                    self._version_major = value
+                elif varname == 'minor':
+                    self._version_minor = value
+                elif varname == 'revision':
+                    self._version_revision = value
+
+        self._logger.info(f'Version {self._version_major}.{self._version_minor}.{self._version_revision}')
+        
 
     # [DEFINITIONS] <varname> <value>
     def _read_defs(self, f):
