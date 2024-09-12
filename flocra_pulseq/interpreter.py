@@ -266,11 +266,24 @@ class PSInterpreter:
             self._error_if(len(mag_shape) != len(phase_shape), f'Tx envelope of RF event {tx_id} has mismatched magnitude ' \
                 'and phase length')
 
-            # Event length and duration, create time points
-            event_len = len(mag_shape) # unitless
-            event_duration = event_len * self._tx_t # us
-            self._error_if(event_len < 1, f"Zero length shape: {tx_event['mag_id']}")
-            x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+            if self._version_major == 1 and self._version_minor < 4:
+                # Event length and duration, create time points
+                event_len = len(mag_shape) # unitless
+                event_duration = event_len * self._tx_t # us
+                self._error_if(event_len < 1, f"Zero length shape: {tx_event['mag_id']}")
+                x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+            else:
+                if tx_event['time_shape_id'] == 0:
+                    # Event length and duration, create time points
+                    event_len = len(mag_shape) # unitless
+                    event_duration = event_len * self._tx_t # us
+                    self._error_if(event_len < 1, f"Zero length shape: {tx_event['mag_id']}")
+                    x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+                else:
+                    # Event length and duration, create time points
+                    event_len = max(self._shapes[tx_event['time_shape_id']]) # unitless
+                    event_duration = event_len * self._definitions['RadiofrequencyRasterTime'] * 1e6# us
+                    x = self._shapes[tx_event['time_shape_id']] * self._definitions['RadiofrequencyRasterTime'] * 1e6
 
             # Scale and convert to complex Tx envelope
             mag = mag_shape * tx_event['amp'] / self._rf_amp_max
