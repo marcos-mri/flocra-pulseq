@@ -303,8 +303,7 @@ class PSInterpreter:
         for grad_id, grad_event in self._grad_events.items():
 
             # Collect shapes, create time points
-            if len(grad_event) == 5: # Trapezoid shape
-
+            if grad_event['is_trap']: # Trapezoid shape
                 # Check for timing issues
                 for time in ['rise', 'flat', 'fall']:
                     self._warning_if(grad_event[time] < self._grad_t, f'Trapezoid {grad_id} has {time} ' \
@@ -332,13 +331,30 @@ class PSInterpreter:
 
                 event_duration = grad_event['rise'] + grad_event['flat'] + grad_event['fall'] # us
             else:
-                # Event length and duration, create time points
-                shape = self._shapes[grad_event['shape_id']]
-                event_len = len(shape) # unitless
-                event_duration = event_len * self._grad_t # us
-                self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
-                grad = shape * grad_event['amp']
-                x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+                if self._version_major == 1 and self._version_minor >= 4:
+                    if grad_event['time_shape_id'] == 0:
+                        shape = self._shapes[grad_event['shape_id']]
+                        event_len = len(shape) # unitless
+                        event_duration = event_len * self._grad_t # us
+                        self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
+                        grad = shape * grad_event['amp']
+                        x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+                    else:
+                        shape = self._shapes[grad_event['shape_id']]
+                        event_len = max(self._shapes[grad_event['time_shape_id']])
+                        event_duration = event_len * self._definitions['GradientRasterTime'] * 1e6
+                        self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
+                        grad = shape * grad_event['amp']
+                        x = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6
+
+                else:
+                    # Event length and duration, create time points
+                    shape = self._shapes[grad_event['shape_id']]
+                    event_len = len(shape) # unitless
+                    event_duration = event_len * self._grad_t # us
+                    self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
+                    grad = shape * grad_event['amp']
+                    x = np.linspace(0, event_duration, num = event_len, endpoint=False)
 
             # Optionally force zero at the end of gradient event
             if self._grad_zero_end:
@@ -699,6 +715,7 @@ class PSInterpreter:
                 data_line.append(0)
                 self._warning_if(data_line[0] in self._grad_events, f'Repeat gradient ID {data_line[0]}, in GRADIENTS, overwriting')
                 self._grad_events[data_line[0]] = {var_names[i] : data_line[i+1] for i in range(len(var_names))}
+            self._grad_events[data_line[0]]['is_trap'] = False
 
         self._logger.info('Gradients: Complete')
 
@@ -735,6 +752,7 @@ class PSInterpreter:
                 data_line.append(0)
                 self._warning_if(data_line[0] in self._grad_events, f'Repeat gradient ID {data_line[0]}, in GRADIENTS, overwriting')
                 self._grad_events[data_line[0]] = {var_names[i] : data_line[i+1] for i in range(len(var_names))}
+            self._grad_events[data_line[0]]['is_trap'] = False
 
         self._logger.info('Gradients: Complete')
 
@@ -771,6 +789,7 @@ class PSInterpreter:
                 data_line.append(0)
                 self._warning_if(data_line[0] in self._grad_events, f'Repeat gradient ID {data_line[0]} in TRAP, overwriting')
                 self._grad_events[data_line[0]] = {var_names[i] : data_line[i+1] for i in range(len(var_names))}
+            self._grad_events[data_line[0]]['is_trap'] = True
 
         self._logger.info('Trapezoids: Complete')
 
