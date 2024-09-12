@@ -139,7 +139,6 @@ class PSInterpreter:
         self.is_assembled = True
         param_dict = {'readout_number' : self.readout_number, 'tx_t' : self._tx_t, 'rx_t' : self._rx_t, 'grad_t': self._grad_t}
         for key, value in self._definitions.items():
-            print(key)
             if key in param_dict:
                 self._logger.warning(f'Key conflict: overwriting key [{key}], value [{param_dict[key]}] with new value [{value}]')
             param_dict[key] = value
