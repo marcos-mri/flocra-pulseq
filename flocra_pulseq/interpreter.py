@@ -143,6 +143,7 @@ class PSInterpreter:
             if key in param_dict:
                 self._logger.warning(f'Key conflict: overwriting key [{key}], value [{param_dict[key]}] with new value [{value}]')
             param_dict[key] = value
+        print(f'read {len(self._definitions)} definitions, {len(self._blocks)} blocks, {len(self._shapes)} shapes, {len(self._adc_events)} adc events, {len(self._rf_events)} rf events, {len(self._grad_events)} gradient shapes')
         return (self.out_data, param_dict)
 
     # Open file and read in all sections into class storage
@@ -996,6 +997,7 @@ class PSInterpreter:
                 self._pulseq_keys['[GRADIENTS]'] = self._read_grad_events_v2
             elif self._version_minor > 4:
                 self._logger.warning("pulseq version {self._version_major}.{self._version_minor}.{self._version_revision} is not supported")
+        return rline
         
 
     # [DEFINITIONS] <varname> <value>
