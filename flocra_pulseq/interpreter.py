@@ -487,7 +487,7 @@ class PSInterpreter:
              out_dict[var] = (np.zeros(0, dtype=int),) * 2
 
         # Minimum duration of block
-        duration = block['dur']
+        duration = block['dur'] * self._definitions['BlockDurationRaster'] * 1e6
         # if block['delay'] != 0:
             # duration = max(duration, self._delay_events[block['delay']])
 
