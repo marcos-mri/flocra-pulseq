@@ -357,9 +357,22 @@ class PSInterpreter:
                         event_len = max(self._shapes[grad_event['time_shape_id']])
                         event_duration = event_len * self._definitions['GradientRasterTime'] * 1e6
                         self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
-                        grad = shape * grad_event['amp']
-                        x = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6
-
+                        grad_ip = []
+                        x_ip = []
+                        self._error_if(len(shape) == 1, f"Shapes of length 1 are not supported!")                            
+                        for i in range(len(shape) - 1):
+                            delta_t = int(self._shapes[grad_event['time_shape_id']][i + 1] - self._shapes[grad_event['time_shape_id']][i])
+                            shape_x = self._shapes[grad_event['time_shape_id']]
+                            if delta_t > 1:
+                                grad_ip.append(np.linspace(shape[i], shape[i+1], num = delta_t))
+                                x_ip.append(np.linspace(shape_x[i], shape_x[i+1], num = delta_t))
+                            else:
+                                grad_ip.append(shape[i])
+                                x_ip.append(shape_x[i])
+                        # grad = shape * grad_event['amp']
+                        # x = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6
+                        grad = np.hstack(np.array(grad_ip)) * grad_event['amp']
+                        x = np.hstack(np.array(x_ip)) * self._definitions['GradientRasterTime'] * 1e6
                 else:
                     # Event length and duration, create time points
                     shape = self._shapes[grad_event['shape_id']]
@@ -377,6 +390,7 @@ class PSInterpreter:
             # Save grad duration, update times, data
             self._grad_durations[grad_id] = event_duration + grad_event['delay']
             self._grad_times[grad_id] = x + grad_event['delay']
+            # print(f"id:{grad_id} amp:{grad} times:{self._grad_times[grad_id]}")
             self._grad_data[grad_id] = grad
 
         self._logger.info('Gradient data compiled')

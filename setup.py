@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='flocra_pulseq',
-      version='0.2',
+      version='0.3',
       description='A simple interpreter from PulSeq to FLOCRA',
       url='https://github.com/lcbMGH/flocra-pulseq',
       author='Lincoln Craven-Brightman, Benjamin Menkuec',
