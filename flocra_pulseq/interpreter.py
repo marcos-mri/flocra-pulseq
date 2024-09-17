@@ -359,7 +359,7 @@ class PSInterpreter:
                         self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
                         grad_ip = []
                         x_ip = []
-                        self._error_if(len(shape) == 1, f"Shapes of length 1 are not supported!")                            
+                        self._error_if(len(shape) == 1, f'Shapes of length 1 are not supported!')                            
                         for i in range(len(shape) - 1):
                             delta_t = int(self._shapes[grad_event['time_shape_id']][i + 1] - self._shapes[grad_event['time_shape_id']][i])
                             shape_x = self._shapes[grad_event['time_shape_id']]
@@ -369,8 +369,6 @@ class PSInterpreter:
                             else:
                                 grad_ip.append(shape[i])
                                 x_ip.append(shape_x[i])
-                        # grad = shape * grad_event['amp']
-                        # x = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6
                         grad = np.hstack([np.array(item).flatten() for item in grad_ip]) * grad_event['amp']
                         x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6
                 else:
