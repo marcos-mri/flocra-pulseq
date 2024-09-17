@@ -371,8 +371,8 @@ class PSInterpreter:
                                 x_ip.append(shape_x[i])
                         # grad = shape * grad_event['amp']
                         # x = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6
-                        grad = np.hstack(np.array(grad_ip)) * grad_event['amp']
-                        x = np.hstack(np.array(x_ip)) * self._definitions['GradientRasterTime'] * 1e6
+                        grad = np.hstack([np.array(item).flatten() for item in grad_ip]) * grad_event['amp']
+                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6
                 else:
                     # Event length and duration, create time points
                     shape = self._shapes[grad_event['shape_id']]
