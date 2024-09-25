@@ -349,7 +349,8 @@ class PSInterpreter:
                         event_duration = event_len * self._grad_t # us
                         self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
                         grad = shape * grad_event['amp']
-                        x = np.linspace(0, event_duration, num = event_len, endpoint=False)
+                        # points are in the center of a raster cell, therefore + 0.5 * self._definitions['GradientRasterTime'] * 1e6
+                        x = np.linspace(0, event_duration, num = event_len, endpoint=False) + 0.5 * self._definitions['GradientRasterTime'] * 1e6
                     else:
                         shape = self._shapes[grad_event['shape_id']]
                         event_len = max(self._shapes[grad_event['time_shape_id']])
@@ -368,8 +369,7 @@ class PSInterpreter:
                                 grad_ip.append(shape[i])
                                 x_ip.append(shape_x[i])
                         grad = np.hstack([np.array(item).flatten() for item in grad_ip]) * grad_event['amp']
-                        # points are in the center of a raster cell, therefore + 0.5 * self._definitions['GradientRasterTime'] * 1e6
-                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6 + 0.5 * self._definitions['GradientRasterTime'] * 1e6
+                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6
                 else:
                     # Event length and duration, create time points
                     shape = self._shapes[grad_event['shape_id']]
