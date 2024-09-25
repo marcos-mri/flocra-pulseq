@@ -700,9 +700,13 @@ class PSInterpreter:
 
             tmp = rline.split()
             if len(tmp) == 8: # <id> <amp> <mag id> <phase id> <time_shape_id> <delay> <freq> <phase>
+                if tmp[4] != 0:
+                    self._logger.warning('time_shape_id != 0 is not yet supported for RF events')
                 data_line = [int(tmp[0]), float(tmp[1]), int(tmp[2]), int(tmp[3]), int(tmp[4]), int(tmp[5]), float(tmp[6]), float(tmp[7])]
                 self._warning_if(data_line[0] in self._rf_events, f'Repeat RF ID {data_line[0]}, overwriting')
                 self._rf_events[data_line[0]] = {var_names[i] : data_line[i+1] for i in range(len(var_names))}
+            else:
+                self._logger.warning(f'unknow RF event format: {rline}')
 
         self._logger.info('RF: Complete')
 
