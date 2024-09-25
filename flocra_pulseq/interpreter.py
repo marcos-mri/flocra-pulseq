@@ -329,13 +329,11 @@ class PSInterpreter:
                 fall_len = int(grad_event['fall'] / self._grad_t)
 
                 x_rise = np.linspace(grad_event['rise'] - rise_len * self._grad_t,
-                 grad_event['rise'],
-                 num=rise_len, endpoint=False)
+                    grad_event['rise'], num=rise_len, endpoint=False)
                 rise = np.flip(np.linspace(grad_event['amp'], 0, num=rise_len, endpoint=False))
 
                 x_fall = np.linspace(grad_event['rise'] + grad_event['flat'],
-                 grad_event['rise'] + grad_event['flat'] + fall_len * self._grad_t,
-                 num=fall_len, endpoint=False)
+                    grad_event['rise'] + grad_event['flat'] + fall_len * self._grad_t, num=fall_len, endpoint=False)
                 fall = np.flip(np.linspace(0, grad_event['amp'], num=fall_len, endpoint=False))
 
                 # Concatenate times and data
@@ -370,7 +368,8 @@ class PSInterpreter:
                                 grad_ip.append(shape[i])
                                 x_ip.append(shape_x[i])
                         grad = np.hstack([np.array(item).flatten() for item in grad_ip]) * grad_event['amp']
-                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6
+                        # points are in the center of a raster cell, therefore + 0.5 * self._definitions['GradientRasterTime'] * 1e6
+                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6 + 0.5 * self._definitions['GradientRasterTime'] * 1e6
                 else:
                     # Event length and duration, create time points
                     shape = self._shapes[grad_event['shape_id']]
