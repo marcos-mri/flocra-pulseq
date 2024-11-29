@@ -1,12 +1,12 @@
-# flocra-pulseq
+# marga-pulseq
 Pulseq interpreter for vnegnev's MARcos fpGA (MARGA)
 
 # Usage:
-TO INSTALL: In the root folder of this repository (Default `flocra-pulseq`), run `pip install -e .`. This will install the package with an editable link. If you need to move the file structure, run `pip uninstall flocra_pulseq`, and reinstall once your files are where you want them.
+TO INSTALL: In the root folder of this repository (Default `marga-pulseq`), run `pip install -e .`. This will install the package with an editable link. If you need to move the file structure, run `pip uninstall marga_pulseq`, and reinstall once your files are where you want them.
 
-To import the package: `import flocra_pulseq.interpreter`
+To import the package: `import marga_pulseq.interpreter`
 
-Create interpreter with `flocra_pulseq.interpreter.PSInterpreter`. Run `PSInterpreter.interpret()` to get output array and dictionary. Specify a log path to log errors, warnings, and progress.
+Create interpreter with `marga_pulseq.interpreter.PSInterpreter`. Run `PSInterpreter.interpret()` to get output array and dictionary. Specify a log path to log errors, warnings, and progress.
 
 # Arguments
 rf_center (float): RF center (local oscillator frequency) in Hz.
