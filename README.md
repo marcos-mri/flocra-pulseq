@@ -1,5 +1,5 @@
 # flocra-pulseq
-Pulseq interpreter for vnegnev's flow-based OCRA (FLOCRA)
+Pulseq interpreter for vnegnev's MARcos fpGA (MARGA)
 
 # Usage:
 TO INSTALL: In the root folder of this repository (Default `flocra-pulseq`), run `pip install -e .`. This will install the package with an editable link. If you need to move the file structure, run `pip uninstall flocra_pulseq`, and reinstall once your files are where you want them.
