@@ -1,8 +1,8 @@
-# marga-pulseq
+# marga_pulseq
 Pulseq interpreter for vnegnev's MARcos fpGA (MARGA)
 
 # Usage:
-TO INSTALL: this interpreter can be installed from PyPl with `pip install marga-pulseq`
+TO INSTALL: this interpreter can be installed from PyPl with `pip install marga_pulseq`
 
 To import the package: `import marga_pulseq.interpreter`
 
