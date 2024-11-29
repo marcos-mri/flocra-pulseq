@@ -2,7 +2,7 @@
 Pulseq interpreter for vnegnev's MARcos fpGA (MARGA)
 
 # Usage:
-TO INSTALL: In the root folder of this repository (Default `marga-pulseq`), run `pip install -e .`. This will install the package with an editable link. If you need to move the file structure, run `pip uninstall marga_pulseq`, and reinstall once your files are where you want them.
+TO INSTALL: this interpreter can be installed from PyPl with `pip install marga-pulseq`
 
 To import the package: `import marga_pulseq.interpreter`
 

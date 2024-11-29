@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(name='marga_pulseq',
       version='0.2.0',
-      description='A simple interpreter from PulSeq 1.4git  to MARGA',
+      description='A simple interpreter from PulSeq 1.4 to MARGA',
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
       url='https://github.com/marcos-mri/marga-pulseq',
