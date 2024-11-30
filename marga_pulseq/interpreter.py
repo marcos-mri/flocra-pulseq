@@ -135,7 +135,7 @@ class PSInterpreter:
                 clk_t=self._clk_t, tx_t=self._tx_t, grad_t=self._grad_t,
                 tx_warmup=self._tx_warmup, tx_zero_end=self._tx_zero_end, grad_zero_end=self._grad_zero_end,
                 log_file='ps_interpreter', log_level=20,
-            )
+                )
         self._read_pulseq(pulseq_file)
         self._compile_tx_data()
         self._compile_grad_data()
@@ -356,24 +356,32 @@ class PSInterpreter:
                         # points are in the center of a raster cell, therefore + 0.5 * self._definitions['GradientRasterTime'] * 1e6
                         x = np.linspace(0, event_duration, num = event_len, endpoint=False) + 0.5 * self._definitions['GradientRasterTime'] * 1e6
                     else:
-                        shape = self._shapes[grad_event['shape_id']]
-                        event_len = max(self._shapes[grad_event['time_shape_id']])
-                        event_duration = event_len * self._definitions['GradientRasterTime'] * 1e6
+                        '''
+                        I modified this to 1) correct a gradient raster delay and 2) to use a gradient raster time
+                        different from the one specified in Pulseq (self._definitions['GradientRasterTime']) if desired.
+                        '''
+                        shape_ampl = self._shapes[grad_event['shape_id']]
+                        shape_time = self._shapes[grad_event['time_shape_id']] * self._definitions['GradientRasterTime'] * 1e6  # us
+                        event_len = max(self._shapes[grad_event['time_shape_id']])  # n of grad raster times
+                        event_duration = event_len * self._definitions['GradientRasterTime'] * 1e6  # us
                         self._error_if(event_len < 1, f"Zero length shape: {grad_event['shape_id']}")
                         grad_ip = []
                         x_ip = []
-                        self._error_if(len(shape) == 1, f'Shapes of length 1 are not supported!')                            
-                        for i in range(len(shape) - 1):
-                            delta_t = int(self._shapes[grad_event['time_shape_id']][i + 1] - self._shapes[grad_event['time_shape_id']][i])
-                            shape_x = self._shapes[grad_event['time_shape_id']]
+                        self._error_if(len(shape_ampl) == 1, f'Shapes of length 1 are not supported!')
+                        for i in range(len(shape_ampl) - 1):
+                            delta_t = int(shape_time[i + 1] - shape_time[i])  # us
+                            delta_a = shape_ampl[i + 1] - shape_ampl[i]
+                            n_steps = int(delta_t / self._grad_t)  # number of time steps
+                            step_t = delta_t / n_steps  # us, real raster time for this shape transition
+                            step_a = delta_a / n_steps  # amplitude step size
                             if delta_t > 1:
-                                grad_ip.append(np.linspace(shape[i], shape[i+1], num = delta_t))
-                                x_ip.append(np.linspace(shape_x[i], shape_x[i+1], num = delta_t))
+                                grad_ip.append(np.linspace(shape_ampl[i] + step_a, shape_ampl[i+1], num = n_steps))
+                                x_ip.append(np.linspace(shape_time[i], shape_time[i+1] - step_t, num = n_steps))
                             else:
-                                grad_ip.append(shape[i])
-                                x_ip.append(shape_x[i])
+                                grad_ip.append(shape_ampl[i])
+                                x_ip.append(shape_time[i])
                         grad = np.hstack([np.array(item).flatten() for item in grad_ip]) * grad_event['amp']
-                        x = np.hstack([np.array(item).flatten() for item in x_ip]) * self._definitions['GradientRasterTime'] * 1e6
+                        x = np.hstack([np.array(item).flatten() for item in x_ip])
                 else:
                     # Event length and duration, create time points
                     shape = self._shapes[grad_event['shape_id']]
@@ -541,6 +549,8 @@ class PSInterpreter:
             out_dict['tx0'] = (self._tx_times[tx_id], self._tx_data[tx_id])
             # duration = max(duration, self._tx_durations[tx_id])
             tx_gate_start = self._tx_times[tx_id][0] - self._tx_warmup
+            if tx_gate_start < 0:
+                print("ERROR")
             self._error_if(tx_gate_start < 0,
                 f'Tx warmup ({self._tx_warmup}) of RF event {tx_id} is longer than delay ({self._tx_times[tx_id][0]})')
             out_dict['tx_gate'] = (np.array([tx_gate_start, self._tx_durations[tx_id]]),
@@ -715,7 +725,6 @@ class PSInterpreter:
 
         return rline
 
-
     # [GRADIENTS] <id> <amp> <shape_id> <delay>
     def _read_grad_events(self, f):
         """
@@ -754,6 +763,7 @@ class PSInterpreter:
         return rline
     
         # [GRADIENTS] <id> <amp> <shape_id> <delay>
+
     def _read_grad_events_v2(self, f):
         """
         Read GRADIENTS (gradient event) section in PulSeq file f to object dict memory.
